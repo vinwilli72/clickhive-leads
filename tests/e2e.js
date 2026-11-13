@@ -532,6 +532,31 @@ async function submit(page, formId, values, ajax = false) {
       assert.equal(await lp.locator('.wp-list-table tbody .column-title strong').count(), 1);
     });
 
+    await check('a field with an Admin Field Label uses it as the column heading, full question on hover', async () => {
+      await ap.goto(`${WP_URL}/wp-admin/options-general.php?page=chl-settings`);
+      for (const key of ['do-you-have-previous-musical-experience', 'will-you-be-the-student-or-is-this-for-someone-else']) {
+        await ap.check(`input[name="chl_settings[list_fields][]"][value="${key}"]`);
+      }
+      await Promise.all([ap.waitForNavigation(), ap.click('#submit')]);
+      await lp.goto(listUrl());
+      const long = await lp.locator('thead .column-chl_f_do-you-have-previous-musical-experience').innerText();
+      assert.equal(long.trim(), 'Do you have previous musical experience?', 'no Admin Field Label: the full question');
+      const admin = lp.locator('thead .column-chl_f_will-you-be-the-student-or-is-this-for-someone-else .chl-col-label');
+      assert.equal(await admin.innerText(), 'Student', 'Admin Field Label used as the heading');
+      assert.equal(await admin.getAttribute('title'), 'Will you be the student, or is this for someone else?');
+      const budget = await lp.locator('thead .column-chl_f_budget').innerText();
+      assert.equal(budget.trim(), 'Budget', 'short labels are left alone');
+      // The lead screen keeps the full question.
+      await vpage.goto(`${WP_URL}/contact/`);
+      await submit(vpage, F.contact, { '1.3': 'Dee', '1.6': 'Ng', 2: 'dee@mailtest.dev', 3: '3605550123' });
+      await submit(vpage, F.details, { 1: '$200', 2: 'Later', 3: 'Two years of piano', 4: 'My son' });
+      const id = lead('email', 'dee@mailtest.dev').id;
+      await lp.goto(`${WP_URL}/wp-admin/post.php?post=${id}&action=edit`);
+      const answers = await lp.locator('#chl_fields').innerText();
+      assert.match(answers, /Do you have previous musical experience\?\s*Two years of piano/);
+      assert.match(answers, /Will you be the student, or is this for someone else\?\s*My son/);
+    });
+
     await check('Gravity Forms has a Click Hive Leads tab that saves per-form settings', async () => {
       await ap.goto(`${WP_URL}/wp-admin/admin.php?page=gf_edit_forms&view=settings&subview=clickhive-leads&id=${F.news}`);
       assert.match(await ap.content(), /Save submissions from this form as leads/);

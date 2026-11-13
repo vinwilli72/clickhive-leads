@@ -6,6 +6,15 @@
 		return;
 	}
 
+	// Many columns can be wider than the screen: scroll the table sideways
+	// instead of letting it run past the edge.
+	if (!table.parentNode.classList.contains('chl-scroll')) {
+		var wrap = document.createElement('div');
+		wrap.className = 'chl-scroll';
+		table.parentNode.insertBefore(wrap, table);
+		wrap.appendChild(table);
+	}
+
 	function flash(el, cls) {
 		el.classList.add(cls);
 		setTimeout(function () { el.classList.remove(cls); }, 1500);

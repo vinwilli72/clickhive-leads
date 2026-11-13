@@ -62,7 +62,7 @@ class CHL_GF_AddOn extends GFAddOn {
 			}
 			$copy[] = array(
 				'name'  => 'copy_' . $field->id,
-				'label' => GFCommon::get_label( $field ),
+				'label' => chl_gf_label( $field ),
 			);
 		}
 

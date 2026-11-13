@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       Click Hive Leads
  * Description:       Lead inbox for sites managed by Click Hive Marketing. Gravity Forms submissions on the forms you choose become leads that staff work from one list: stage, checkboxes, notes and export.
- * Version:           0.1.0
+ * Version:           0.1.1
  * Requires at least: 6.2
  * Requires PHP:      7.4
  * Author:            Click Hive Marketing
@@ -14,7 +14,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'CHL_VERSION', '0.1.0' );
+define( 'CHL_VERSION', '0.1.1' );
 define( 'CHL_FILE', __FILE__ );
 define( 'CHL_DIR', plugin_dir_path( __FILE__ ) );
 define( 'CHL_URL', plugin_dir_url( __FILE__ ) );
