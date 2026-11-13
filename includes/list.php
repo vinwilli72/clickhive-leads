@@ -83,8 +83,10 @@ add_filter( 'manage_' . CHL_CPT . '_posts_columns', function ( $cols ) {
 	foreach ( chl_checkboxes() as $key => $box ) {
 		$out[ 'chl_cb_' . $key ] = $box['label'];
 	}
-	foreach ( chl_list_fields() as $key => $label ) {
-		$out[ 'chl_f_' . $key ] = $label;
+	foreach ( chl_list_fields() as $key => $f ) {
+		$out[ 'chl_f_' . $key ] = $f['short'] === $f['label']
+			? esc_html( $f['label'] )
+			: sprintf( '<span class="chl-col-label" title="%s">%s</span>', esc_attr( $f['label'] ), esc_html( $f['short'] ) );
 	}
 	$out['chl_notes'] = __( 'Latest note', 'clickhive-leads' );
 	return $out;

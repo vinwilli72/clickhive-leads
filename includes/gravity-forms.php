@@ -35,6 +35,21 @@ function chl_gf_role( $form ) {
 	return 'followup' === rgar( chl_gf_settings( $form ), 'role' ) ? 'followup' : 'create';
 }
 
+/**
+ * A field's label as visitors see it. Gravity Forms swaps in the Admin Field
+ * Label on its own screens, so read the property directly: the key made from
+ * it must be the same everywhere.
+ */
+function chl_gf_label( $field ) {
+	return (string) $field->label;
+}
+
+/** The Admin Field Label when one is set, used as the short list heading. */
+function chl_gf_short_label( $field ) {
+	$admin = trim( (string) $field->adminLabel );
+	return '' !== $admin ? $admin : chl_gf_label( $field );
+}
+
 /** Fields checked under "Other fields to copy", as key => GF_Field. */
 function chl_gf_copy_fields( $form ) {
 	$s    = chl_gf_settings( $form );
@@ -44,7 +59,7 @@ function chl_gf_copy_fields( $form ) {
 		if ( '1' !== (string) rgar( $s, 'copy_' . $field->id ) || in_array( $field->type, CHL_GF_AddOn::skip_types(), true ) ) {
 			continue;
 		}
-		$key = sanitize_title( GFCommon::get_label( $field ) );
+		$key = sanitize_title( chl_gf_label( $field ) );
 		$key = $key ? $key : 'field-' . $field->id;
 		if ( isset( $seen[ $key ] ) ) {
 			$key .= '-' . $field->id;
@@ -100,7 +115,7 @@ function chl_gf_submission( $entry, $form ) {
 	foreach ( chl_gf_copy_fields( $form ) as $key => $field ) {
 		$v = $addon->get_field_value( $form, $entry, (string) $field->id );
 		$fields[ $key ] = array(
-			'label' => GFCommon::get_label( $field ),
+			'label' => chl_gf_label( $field ),
 			'value' => is_array( $v ) ? implode( ', ', $v ) : (string) $v,
 		);
 	}
@@ -261,8 +276,10 @@ add_filter( 'chl_connected_forms', function ( $forms ) {
 			continue;
 		}
 		$fields = array();
+		$short  = array();
 		foreach ( chl_gf_copy_fields( $form ) as $key => $field ) {
-			$fields[ $key ] = GFCommon::get_label( $field );
+			$fields[ $key ] = chl_gf_label( $field );
+			$short[ $key ]  = chl_gf_short_label( $field );
 		}
 		$forms[] = array(
 			'id'       => (int) $form['id'],
@@ -270,6 +287,7 @@ add_filter( 'chl_connected_forms', function ( $forms ) {
 			'role'     => chl_gf_role( $form ),
 			'edit_url' => admin_url( 'admin.php?page=gf_edit_forms&view=settings&subview=' . CHL_GF_SLUG . '&id=' . (int) $form['id'] ),
 			'fields'   => $fields,
+			'short'    => $short,
 		);
 	}
 	return $forms;

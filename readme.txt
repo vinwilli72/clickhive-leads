@@ -1,7 +1,7 @@
 === Click Hive Leads ===
 Requires at least: 6.2
 Requires PHP: 7.4
-Stable tag: 0.1.0
+Stable tag: 0.1.1
 
 Lead inbox for sites managed by Click Hive Marketing.
 
@@ -67,6 +67,10 @@ editors still see the form.
   link while logged out.
 
 == Changelog ==
+
+= 0.1.1 =
+* Form fields shown as list columns use the field's Admin Field Label from Gravity Forms as the heading when it has one. Hovering the heading shows the full question.
+* Lead list columns no longer break words in half. When there are more columns than fit, the list scrolls sideways.
 
 = 0.1.0 =
 * First version: leads from Gravity Forms, lead list with inline stage, checkboxes and notes, filters, search, monthly summary, CSV export, two-step forms, source capture, merge tags, Lead Manager role.

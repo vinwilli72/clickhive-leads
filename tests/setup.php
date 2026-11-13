@@ -113,6 +113,8 @@ $details = chl_test_form(
 	array(
 		array( 'id' => 1, 'type' => 'text', 'label' => 'Budget' ),
 		array( 'id' => 2, 'type' => 'select', 'label' => 'Timeline', 'choices' => array( array( 'text' => 'This month', 'value' => 'This month' ), array( 'text' => 'Later', 'value' => 'Later' ) ) ),
+		array( 'id' => 3, 'type' => 'text', 'label' => 'Do you have previous musical experience?' ),
+		array( 'id' => 4, 'type' => 'text', 'label' => 'Will you be the student, or is this for someone else?', 'adminLabel' => 'Student' ),
 	),
 	'Follow-up for {ch_lead_link}'
 );
@@ -138,7 +140,7 @@ $p_news    = chl_test_page( 'Newsletter', 'newsletter', '[gravityform id="' . $n
 
 $settings = array(
 	$contact => array( 'enabled' => '1', 'role' => 'create', 'map_first_name' => '1.3', 'map_last_name' => '1.6', 'map_email' => '2', 'map_phone' => '3', 'copy_4' => '1', 'followup_page' => (string) $p_details ),
-	$details => array( 'enabled' => '1', 'role' => 'followup', 'copy_1' => '1', 'copy_2' => '1', 'start_page' => (string) $p_contact ),
+	$details => array( 'enabled' => '1', 'role' => 'followup', 'copy_1' => '1', 'copy_2' => '1', 'copy_3' => '1', 'copy_4' => '1', 'start_page' => (string) $p_contact ),
 	$quote   => array( 'enabled' => '1', 'role' => 'create', 'map_name' => '1', 'map_email' => '2', 'map_phone' => '3', 'copy_4' => '1' ),
 );
 foreach ( $settings as $form_id => $s ) {

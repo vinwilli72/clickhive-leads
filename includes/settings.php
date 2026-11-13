@@ -162,7 +162,8 @@ function chl_list_url( $args = array() ) {
 /**
  * Forms connected to leads, from every intake adapter.
  *
- * @return array[] Each: id, title, role, edit_url, fields (key => label).
+ * @return array[] Each: id, title, role, edit_url, fields (key => label),
+ *                 short (key => Admin Field Label or label).
  */
 function chl_connected_forms() {
 	return (array) apply_filters( 'chl_connected_forms', array() );
@@ -183,13 +184,28 @@ function chl_known_fields() {
 	return $known;
 }
 
-/** Mapped fields the administrator chose to show as list columns. */
+/**
+ * Mapped fields the administrator chose to show as list columns.
+ *
+ * The heading is the field's Admin Field Label from Gravity Forms when it has
+ * one, so long questions can have a short column heading.
+ *
+ * @return array key => array( 'label' => full label, 'short' => column heading ).
+ */
 function chl_list_fields() {
 	$known = chl_known_fields();
-	$out   = array();
+	$short = array();
+	foreach ( chl_connected_forms() as $form ) {
+		$short += isset( $form['short'] ) ? (array) $form['short'] : array();
+	}
+	$out = array();
 	foreach ( (array) chl_setting( 'list_fields' ) as $key ) {
 		if ( isset( $known[ $key ] ) ) {
-			$out[ $key ] = $known[ $key ];
+			$heading     = isset( $short[ $key ] ) && $short[ $key ] !== $known[ $key ] ? $short[ $key ] : $known[ $key ];
+			$out[ $key ] = array(
+				'label' => $known[ $key ],
+				'short' => $heading,
+			);
 		}
 	}
 	return $out;
@@ -305,6 +321,7 @@ function chl_render_settings() {
 								<?php endforeach; ?>
 							</fieldset>
 							<p class="description"><?php esc_html_e( 'Optional. Every copied field always shows on the lead itself and in the export.', 'clickhive-leads' ); ?></p>
+							<p class="description"><?php esc_html_e( 'For a long question, give the field an Admin Field Label in Gravity Forms (the field\'s Advanced tab). The column uses it as the heading, and hovering shows the full question.', 'clickhive-leads' ); ?></p>
 						<?php endif; ?>
 					</td>
 				</tr>

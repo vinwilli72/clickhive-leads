@@ -3,6 +3,20 @@
 .post-type-ch_lead .chl-returning { color: #b26200; font-weight: 600; font-size: 12px; }
 .post-type-ch_lead .column-chl_received { width: 112px; }
 .post-type-ch_lead .column-chl_stage { width: 140px; }
+.post-type-ch_lead .column-chl_phone { width: 120px; white-space: nowrap; }
+/* WordPress lists use a fixed table layout, which breaks narrow columns in
+   the middle of words. Size columns to their content instead, and wrap only
+   between words. */
+.post-type-ch_lead .wp-list-table { table-layout: auto; }
+.post-type-ch_lead .chl-scroll { overflow-x: auto; clear: both; }
+.post-type-ch_lead .wp-list-table th,
+.post-type-ch_lead .wp-list-table td { overflow-wrap: normal; word-break: normal; }
+.post-type-ch_lead .column-title { min-width: 110px; }
+.post-type-ch_lead .column-chl_email { overflow-wrap: anywhere; min-width: 150px; }
+.post-type-ch_lead th[class*="column-chl_f_"],
+.post-type-ch_lead td[class*="column-chl_f_"] { min-width: 90px; max-width: 220px; }
+.post-type-ch_lead .column-chl_notes { min-width: 220px; }
+.post-type-ch_lead .chl-col-label { cursor: help; border-bottom: 1px dotted currentColor; }
 .post-type-ch_lead .column-chl_stage select { max-width: 100%; }
 .post-type-ch_lead th[class*="column-chl_cb_"],
 .post-type-ch_lead td[class*="column-chl_cb_"] { width: 84px; text-align: center; }
