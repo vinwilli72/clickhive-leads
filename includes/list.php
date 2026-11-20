@@ -451,6 +451,11 @@ function chl_count_month( DateTimeImmutable $month ) {
 
 /** Leads moved to a Won stage during a month, from the stage history. */
 function chl_count_won( DateTimeImmutable $month ) {
+	return chl_count_moved_to( $month, 'won' );
+}
+
+/** Leads moved to a stage in a category (won or lost) during a month, from the stage history. */
+function chl_count_moved_to( DateTimeImmutable $month, $category ) {
 	global $wpdb;
 	$start = $month->setTime( 0, 0 );
 	$end   = $start->modify( '+1 month' );
@@ -459,7 +464,8 @@ function chl_count_won( DateTimeImmutable $month ) {
 	return (int) $wpdb->get_var( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
 		$wpdb->prepare(
 			"SELECT COUNT( DISTINCT h.lead_id ) FROM {$table} h INNER JOIN {$wpdb->posts} p ON p.ID = h.lead_id AND p.post_status = 'publish'
-			WHERE h.event = 'stage' AND h.category = 'won' AND h.created_at >= %s AND h.created_at < %s", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+			WHERE h.event = 'stage' AND h.category = %s AND h.created_at >= %s AND h.created_at < %s", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+			$category,
 			$start->setTimezone( $utc )->format( 'Y-m-d H:i:s' ),
 			$end->setTimezone( $utc )->format( 'Y-m-d H:i:s' )
 		)
@@ -470,18 +476,7 @@ add_action( 'manage_posts_extra_tablenav', function ( $which ) {
 	if ( 'top' !== $which || ! chl_is_list_screen() ) {
 		return;
 	}
-	$this_month = current_datetime()->modify( 'first day of this month' )->setTime( 0, 0 );
-	$last_month = $this_month->modify( '-1 month' );
-
-	echo '<div class="alignleft actions chl-summary">';
-	printf(
-		/* translators: 1: leads this month, 2: won this month, 3: leads last month */
-		esc_html__( 'This month: %1$s leads, %2$s won | Last month: %3$s leads', 'clickhive-leads' ),
-		'<strong class="chl-sum-this">' . (int) chl_count_month( $this_month ) . '</strong>',
-		'<strong class="chl-sum-won">' . (int) chl_count_won( $this_month ) . '</strong>',
-		'<strong class="chl-sum-last">' . (int) chl_count_month( $last_month ) . '</strong>'
-	);
-	echo '</div>';
+	// The monthly summary that used to sit here is now the scorecard above the list (dashboard.php).
 
 	if ( current_user_can( CHL_CAP_EXPORT ) ) {
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended

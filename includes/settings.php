@@ -14,6 +14,8 @@ function chl_defaults() {
 		'checkboxes'     => "Followed up | Clear\nAdded to CRM",
 		'list_fields'    => array(),
 		'retention_days' => 0,
+		// Show the leads summary on Dashboard > Home and the Click Hive Client Dashboard.
+		'dashboard_card' => 0,
 	);
 }
 
@@ -251,6 +253,7 @@ function chl_sanitize_settings( $in ) {
 	$out['checkboxes']     = sanitize_textarea_field( isset( $in['checkboxes'] ) ? $in['checkboxes'] : '' );
 	$out['list_fields']    = array_values( array_filter( array_map( 'sanitize_key', (array) ( isset( $in['list_fields'] ) ? $in['list_fields'] : array() ) ) ) );
 	$out['retention_days'] = min( 3650, absint( isset( $in['retention_days'] ) ? $in['retention_days'] : 0 ) );
+	$out['dashboard_card'] = empty( $in['dashboard_card'] ) ? 0 : 1;
 	if ( $out['retention_days'] && $out['retention_days'] < 30 ) {
 		$out['retention_days'] = 30;
 	}
@@ -330,6 +333,17 @@ function chl_render_settings() {
 					<td>
 						<input type="number" min="0" max="3650" id="chl_retention" name="<?php echo esc_attr( $name ); ?>[retention_days]" value="<?php echo esc_attr( $s['retention_days'] ); ?>" class="small-text"> <?php esc_html_e( 'days', 'clickhive-leads' ); ?>
 						<p class="description"><?php esc_html_e( '0 keeps leads forever. Otherwise leads with no new submission in this many days are deleted (30 days minimum).', 'clickhive-leads' ); ?></p>
+					</td>
+				</tr>
+			</table>
+
+			<h2><?php esc_html_e( 'Dashboard', 'clickhive-leads' ); ?></h2>
+			<table class="form-table" role="presentation">
+				<tr>
+					<th scope="row"><?php esc_html_e( 'Leads summary', 'clickhive-leads' ); ?></th>
+					<td>
+						<label><input type="checkbox" name="<?php echo esc_attr( $name ); ?>[dashboard_card]" value="1" <?php checked( $s['dashboard_card'] ); ?>> <?php esc_html_e( 'Show a leads summary on Dashboard > Home and the Click Hive Client Dashboard', 'clickhive-leads' ); ?></label>
+						<p class="description"><?php esc_html_e( 'Leads this month, open leads and the latest lead. Only people who can work leads see it.', 'clickhive-leads' ); ?></p>
 					</td>
 				</tr>
 			</table>
