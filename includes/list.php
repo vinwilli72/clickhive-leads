@@ -25,7 +25,9 @@ function chl_is_list_screen() {
 add_action( 'admin_menu', function () {
 	$parent = 'edit.php?post_type=' . CHL_CPT;
 	remove_submenu_page( $parent, 'post-new.php?post_type=' . CHL_CPT );
-	add_submenu_page( $parent, __( 'Open leads', 'clickhive-leads' ), __( 'Open leads', 'clickhive-leads' ), CHL_CAP_WORK, $parent . '&chl_cat=open' );
+	/* translators: %s: plural name for leads, lowercase */
+	$open = sprintf( __( 'Open %s', 'clickhive-leads' ), chl_label( 'plural_lc' ) );
+	add_submenu_page( $parent, $open, $open, CHL_CAP_WORK, $parent . '&chl_cat=open' );
 }, 20 );
 
 // Highlight "Open leads" rather than "All Leads" while that view is showing.

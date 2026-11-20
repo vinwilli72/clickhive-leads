@@ -49,13 +49,13 @@ function chl_render_scorecard() {
 	$first = chl_month_start( 0 );
 	$last  = chl_month_start( 1 );
 
-	echo '<div class="chl-scorecard" role="group" aria-label="' . esc_attr__( 'Lead summary', 'clickhive-leads' ) . '">';
+	echo '<div class="chl-scorecard" role="group" aria-label="' . esc_attr( sprintf( __( '%s summary', 'clickhive-leads' ), chl_label( 'singular' ) ) ) . '">';
 	// phpcs:disable WordPress.Security.EscapeOutput -- escaped in chl_tile()
-	echo chl_tile( __( 'Total leads this month', 'clickhive-leads' ), $n['this_month'], chl_list_url( array( 'chl_from' => $first->format( 'Y-m-d' ) ) ) );
-	echo chl_tile( __( 'Leads won this month', 'clickhive-leads' ), $n['won'] );
-	echo chl_tile( __( 'Leads lost this month', 'clickhive-leads' ), $n['lost'] );
+	echo chl_tile( sprintf( __( 'Total %s this month', 'clickhive-leads' ), chl_label( 'plural_lc' ) ), $n['this_month'], chl_list_url( array( 'chl_from' => $first->format( 'Y-m-d' ) ) ) );
+	echo chl_tile( sprintf( __( '%s won this month', 'clickhive-leads' ), chl_label() ), $n['won'] );
+	echo chl_tile( sprintf( __( '%s lost this month', 'clickhive-leads' ), chl_label() ), $n['lost'] );
 	echo chl_tile(
-		__( 'Total leads last month', 'clickhive-leads' ),
+		sprintf( __( 'Total %s last month', 'clickhive-leads' ), chl_label( 'plural_lc' ) ),
 		$n['last_month'],
 		chl_list_url(
 			array(
@@ -90,8 +90,8 @@ function chl_render_dashboard_card() {
 	echo '<div class="chl-dash">';
 	echo '<div class="chl-scorecard chl-scorecard-compact">';
 	// phpcs:disable WordPress.Security.EscapeOutput -- escaped in chl_tile()
-	echo chl_tile( __( 'Leads this month', 'clickhive-leads' ), $n['this_month'], chl_list_url( array( 'chl_from' => chl_month_start( 0 )->format( 'Y-m-d' ) ) ) );
-	echo chl_tile( __( 'Open leads', 'clickhive-leads' ), $n['open'], chl_list_url( array( 'chl_cat' => 'open' ) ) );
+	echo chl_tile( sprintf( __( '%s this month', 'clickhive-leads' ), chl_label() ), $n['this_month'], chl_list_url( array( 'chl_from' => chl_month_start( 0 )->format( 'Y-m-d' ) ) ) );
+	echo chl_tile( sprintf( __( 'Open %s', 'clickhive-leads' ), chl_label( 'plural_lc' ) ), $n['open'], chl_list_url( array( 'chl_cat' => 'open' ) ) );
 	// phpcs:enable
 	echo '</div>';
 
@@ -109,7 +109,7 @@ function chl_render_dashboard_card() {
 		$id    = (int) $ids[0];
 		$stage = (string) chl_get( $id, 'stage' );
 		$name  = chl_lead_name( $id );
-		echo '<p class="chl-dash-latest"><span class="chl-dash-latest-label">' . esc_html__( 'Latest lead', 'clickhive-leads' ) . '</span> ';
+		echo '<p class="chl-dash-latest"><span class="chl-dash-latest-label">' . esc_html( sprintf( __( 'Latest %s', 'clickhive-leads' ), chl_label( 'singular_lc' ) ) ) . '</span> ';
 		echo '<a href="' . esc_url( chl_lead_url( $id ) ) . '"><strong>' . esc_html( '' !== $name ? $name : __( 'No name', 'clickhive-leads' ) ) . '</strong></a>';
 		echo ' &middot; ' . esc_html( sprintf( __( '%s ago', 'clickhive-leads' ), human_time_diff( (int) get_post_time( 'U', true, $id ) ) ) );
 		if ( '' !== $stage ) {
@@ -117,24 +117,24 @@ function chl_render_dashboard_card() {
 		}
 		echo '</p>';
 	} else {
-		echo '<p class="chl-dash-latest">' . esc_html__( 'No leads yet.', 'clickhive-leads' ) . '</p>';
+		echo '<p class="chl-dash-latest">' . esc_html( sprintf( __( 'No %s yet.', 'clickhive-leads' ), chl_label( 'plural_lc' ) ) ) . '</p>';
 	}
 
-	echo '<p class="chl-dash-actions"><a class="button" href="' . esc_url( chl_list_url() ) . '">' . esc_html__( 'Open Leads', 'clickhive-leads' ) . '</a></p>';
+	echo '<p class="chl-dash-actions"><a class="button" href="' . esc_url( chl_list_url() ) . '">' . esc_html( sprintf( __( 'Open %s', 'clickhive-leads' ), chl_label() ) ) . '</a></p>';
 	echo '</div>';
 }
 
 // Dashboard > Home widget.
 add_action( 'wp_dashboard_setup', function () {
 	if ( chl_dashboard_enabled() ) {
-		wp_add_dashboard_widget( 'chl_leads_summary', __( 'Leads', 'clickhive-leads' ), 'chl_render_dashboard_card' );
+		wp_add_dashboard_widget( 'chl_leads_summary', chl_label(), 'chl_render_dashboard_card' );
 	}
 } );
 
 // Click Hive Utility's full Client Dashboard page (Home already has the widget above).
 add_action( 'chu_client_dashboard_after_links', function ( $full_page = true ) {
 	if ( $full_page && chl_dashboard_enabled() ) {
-		echo '<h2>' . esc_html__( 'Leads', 'clickhive-leads' ) . '</h2><section class="chm-card chl-dash-card">';
+		echo '<h2>' . esc_html( chl_label() ) . '</h2><section class="chm-card chl-dash-card">';
 		chl_render_dashboard_card();
 		echo '</section>';
 	}

@@ -26,7 +26,7 @@ add_action( 'edit_form_top', function ( $post ) {
 		'<h2 class="chl-lead-name">%s</h2><p><a href="%s">%s</a></p>',
 		esc_html( get_the_title( $post ) ),
 		esc_url( chl_list_url() ),
-		esc_html__( 'Back to leads', 'clickhive-leads' )
+		esc_html( sprintf( __( 'Back to %s', 'clickhive-leads' ), chl_label( 'plural_lc' ) ) )
 	);
 } );
 
@@ -120,7 +120,7 @@ function chl_box_notes( $post ) {
 function chl_box_fields( $post ) {
 	$fields = chl_fields( $post->ID );
 	if ( ! $fields ) {
-		echo '<p class="chl-muted">' . esc_html__( 'No form answers are copied to this lead. Choose fields under each form\'s Settings > Click Hive Leads.', 'clickhive-leads' ) . '</p>';
+		echo '<p class="chl-muted">' . esc_html( sprintf( __( 'No form answers are copied to this %s. Choose fields under each form\'s Settings > Click Hive Leads.', 'clickhive-leads' ), chl_label( 'singular_lc' ) ) ) . '</p>';
 		return;
 	}
 	$titles = chl_form_titles();
@@ -201,8 +201,8 @@ function chl_history_text( array $r ) {
 
 	switch ( $r['event'] ) {
 		case 'created':
-			/* translators: %s: form name */
-			return esc_html( sprintf( __( 'Lead created from %s', 'clickhive-leads' ), $form ) );
+			/* translators: 1: singular name for a lead, 2: form name */
+			return esc_html( sprintf( __( '%1$s created from %2$s', 'clickhive-leads' ), chl_label( 'singular' ), $form ) );
 		case 'submission':
 			$text = sprintf( __( 'Sent %s', 'clickhive-leads' ), $form );
 			if ( ! empty( $d['source'] ) ) {

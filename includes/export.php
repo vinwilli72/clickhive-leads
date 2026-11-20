@@ -10,7 +10,7 @@ add_action( 'admin_post_chl_export', 'chl_export_csv' );
 
 function chl_export_csv() {
 	if ( ! current_user_can( CHL_CAP_EXPORT ) ) {
-		wp_die( esc_html__( 'You do not have permission to export leads.', 'clickhive-leads' ), 403 );
+		wp_die( esc_html( sprintf( __( 'You do not have permission to export %s.', 'clickhive-leads' ), chl_label( 'plural_lc' ) ) ), 403 );
 	}
 	check_admin_referer( 'chl_export' );
 
@@ -71,7 +71,7 @@ function chl_export_csv() {
 
 	nocache_headers();
 	header( 'Content-Type: text/csv; charset=utf-8' );
-	header( 'Content-Disposition: attachment; filename="leads-' . wp_date( 'Y-m-d' ) . '.csv"' );
+	header( 'Content-Disposition: attachment; filename="' . ( sanitize_title( chl_label() ) ? sanitize_title( chl_label() ) : 'leads' ) . '-' . wp_date( 'Y-m-d' ) . '.csv"' );
 
 	$out = fopen( 'php://output', 'w' ); // phpcs:ignore WordPress.WP.AlternativeFunctions
 	fwrite( $out, "\xEF\xBB\xBF" ); // phpcs:ignore WordPress.WP.AlternativeFunctions -- so Excel reads UTF-8

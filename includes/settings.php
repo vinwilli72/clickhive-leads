@@ -10,6 +10,9 @@ const CHL_OPTION = 'chl_settings';
 
 function chl_defaults() {
 	return array(
+		// What the site calls a lead, e.g. "Franchise Request". Empty means the default.
+		'label_singular' => '',
+		'label_plural'   => '',
 		'stages'         => "New\nContacted\nQuoted\nCustomer | Won\nNot a fit | Lost",
 		'checkboxes'     => "Followed up | Clear\nAdded to CRM",
 		'list_fields'    => array(),
@@ -26,6 +29,47 @@ function chl_settings() {
 function chl_setting( $key ) {
 	$s = chl_settings();
 	return isset( $s[ $key ] ) ? $s[ $key ] : null;
+}
+
+/** Longest name the settings accept. */
+const CHL_LABEL_MAX = 30;
+
+/**
+ * What this site calls a lead, from Settings > Click Hive Leads.
+ *
+ * @param string $form plural ("Leads"), singular ("Lead"), or plural_lc /
+ *                     singular_lc for use inside a sentence ("leads").
+ */
+function chl_label( $form = 'plural' ) {
+	$s        = chl_settings();
+	$plural   = trim( (string) $s['label_plural'] );
+	$singular = trim( (string) $s['label_singular'] );
+	$plural   = '' !== $plural ? $plural : __( 'Leads', 'clickhive-leads' );
+	$singular = '' !== $singular ? $singular : __( 'Lead', 'clickhive-leads' );
+	switch ( $form ) {
+		case 'singular':
+			return $singular;
+		case 'singular_lc':
+			return chl_lowercase( $singular );
+		case 'plural_lc':
+			return chl_lowercase( $plural );
+		default:
+			return $plural;
+	}
+}
+
+/** Lowercases each word for mid-sentence use, leaving acronyms like "RFQ" alone. */
+function chl_lowercase( $text ) {
+	return preg_replace_callback(
+		'/\S+/u',
+		function ( $m ) {
+			if ( preg_match( '/\p{Lu}.*\p{Lu}/u', $m[0] ) ) {
+				return $m[0];
+			}
+			return function_exists( 'mb_strtolower' ) ? mb_strtolower( $m[0] ) : strtolower( $m[0] );
+		},
+		$text
+	);
 }
 
 /** The three fixed stage categories. Reports group by these. */
@@ -250,6 +294,14 @@ function chl_sanitize_settings( $in ) {
 		add_settings_error( CHL_OPTION, 'chl_open', __( 'Add at least one Open stage. New leads are given the first Open stage.', 'clickhive-leads' ) );
 	}
 
+	foreach ( array( 'label_singular', 'label_plural' ) as $key ) {
+		$label       = trim( sanitize_text_field( isset( $in[ $key ] ) ? $in[ $key ] : '' ) );
+		$out[ $key ] = function_exists( 'mb_substr' ) ? mb_substr( $label, 0, CHL_LABEL_MAX ) : substr( $label, 0, CHL_LABEL_MAX );
+	}
+	if ( ( '' === $out['label_singular'] ) !== ( '' === $out['label_plural'] ) ) {
+		add_settings_error( CHL_OPTION, 'chl_label', __( 'Fill in both the singular and plural name, or leave both empty to use Lead and Leads.', 'clickhive-leads' ), 'warning' );
+	}
+
 	$out['checkboxes']     = sanitize_textarea_field( isset( $in['checkboxes'] ) ? $in['checkboxes'] : '' );
 	$out['list_fields']    = array_values( array_filter( array_map( 'sanitize_key', (array) ( isset( $in['list_fields'] ) ? $in['list_fields'] : array() ) ) ) );
 	$out['retention_days'] = min( 3650, absint( isset( $in['retention_days'] ) ? $in['retention_days'] : 0 ) );
@@ -285,7 +337,7 @@ function chl_render_settings() {
 				<?php foreach ( $forms as $f ) : ?>
 					<tr>
 						<td><a href="<?php echo esc_url( $f['edit_url'] ); ?>"><?php echo esc_html( $f['title'] ); ?></a></td>
-						<td><?php echo esc_html( 'followup' === $f['role'] ? __( 'Follow-up step', 'clickhive-leads' ) : __( 'Creates or updates a lead', 'clickhive-leads' ) ); ?></td>
+						<td><?php echo esc_html( 'followup' === $f['role'] ? __( 'Follow-up step', 'clickhive-leads' ) : sprintf( __( 'Creates or updates a %s', 'clickhive-leads' ), chl_label( 'singular_lc' ) ) ); ?></td>
 						<td><?php echo esc_html( $f['fields'] ? implode( ', ', $f['fields'] ) : __( 'None', 'clickhive-leads' ) ); ?></td>
 					</tr>
 				<?php endforeach; ?>
@@ -295,14 +347,32 @@ function chl_render_settings() {
 
 		<form method="post" action="options.php">
 			<?php settings_fields( 'chl_settings_group' ); ?>
-			<h2><?php esc_html_e( 'Lead list', 'clickhive-leads' ); ?></h2>
+			<h2><?php esc_html_e( 'Name', 'clickhive-leads' ); ?></h2>
+			<table class="form-table" role="presentation">
+				<tr>
+					<th scope="row"><label for="chl_label_singular"><?php esc_html_e( 'Call one lead', 'clickhive-leads' ); ?></label></th>
+					<td>
+						<input type="text" id="chl_label_singular" name="<?php echo esc_attr( $name ); ?>[label_singular]" value="<?php echo esc_attr( $s['label_singular'] ); ?>" placeholder="<?php esc_attr_e( 'Lead', 'clickhive-leads' ); ?>" maxlength="<?php echo (int) CHL_LABEL_MAX; ?>" class="regular-text">
+					</td>
+				</tr>
+				<tr>
+					<th scope="row"><label for="chl_label_plural"><?php esc_html_e( 'Call several leads', 'clickhive-leads' ); ?></label></th>
+					<td>
+						<input type="text" id="chl_label_plural" name="<?php echo esc_attr( $name ); ?>[label_plural]" value="<?php echo esc_attr( $s['label_plural'] ); ?>" placeholder="<?php esc_attr_e( 'Leads', 'clickhive-leads' ); ?>" maxlength="<?php echo (int) CHL_LABEL_MAX; ?>" class="regular-text">
+						<p class="description"><?php esc_html_e( 'Replaces the word Lead across the admin menu, list, lead screen, dashboard summary and export, for example Franchise Request and Franchise Requests. Leave both empty to use Lead and Leads.', 'clickhive-leads' ); ?></p>
+						<p class="description"><?php esc_html_e( 'Keep the plural to 16 characters or fewer so the admin menu item stays on one line. Longer names, up to 30, still work but wrap to two lines in the menu and on the dashboard tiles.', 'clickhive-leads' ); ?></p>
+					</td>
+				</tr>
+			</table>
+
+			<h2><?php echo esc_html( sprintf( __( '%s list', 'clickhive-leads' ), chl_label( 'singular' ) ) ); ?></h2>
 			<table class="form-table" role="presentation">
 				<tr>
 					<th scope="row"><label for="chl_stages"><?php esc_html_e( 'Stages', 'clickhive-leads' ); ?></label></th>
 					<td>
 						<textarea id="chl_stages" name="<?php echo esc_attr( $name ); ?>[stages]" rows="7" class="regular-text"><?php echo esc_textarea( $s['stages'] ); ?></textarea>
-						<p class="description"><?php esc_html_e( 'One stage per line, in order. Add "| Won" or "| Lost" after a stage that ends the lead; other stages count as Open. New leads get the first Open stage.', 'clickhive-leads' ); ?></p>
-						<p class="description"><?php esc_html_e( 'Removing a line retires it: leads keep it, but it can\'t be picked again.', 'clickhive-leads' ); ?></p>
+						<p class="description"><?php echo esc_html( sprintf( __( 'One stage per line, in order. Add "| Won" or "| Lost" after a stage that ends the %1$s; other stages count as Open. New %2$s get the first Open stage.', 'clickhive-leads' ), chl_label( 'singular_lc' ), chl_label( 'plural_lc' ) ) ); ?></p>
+						<p class="description"><?php echo esc_html( sprintf( __( 'Removing a line retires it: %s keep it, but it can\'t be picked again.', 'clickhive-leads' ), chl_label( 'plural_lc' ) ) ); ?></p>
 					</td>
 				</tr>
 				<tr>
@@ -323,16 +393,16 @@ function chl_render_settings() {
 									<label style="display:block"><input type="checkbox" name="<?php echo esc_attr( $name ); ?>[list_fields][]" value="<?php echo esc_attr( $key ); ?>" <?php checked( in_array( $key, (array) $s['list_fields'], true ) ); ?>> <?php echo esc_html( $label ); ?></label>
 								<?php endforeach; ?>
 							</fieldset>
-							<p class="description"><?php esc_html_e( 'Optional. Every copied field always shows on the lead itself and in the export.', 'clickhive-leads' ); ?></p>
+							<p class="description"><?php echo esc_html( sprintf( __( 'Optional. Every copied field always shows on the %s itself and in the export.', 'clickhive-leads' ), chl_label( 'singular_lc' ) ) ); ?></p>
 							<p class="description"><?php esc_html_e( 'For a long question, give the field an Admin Field Label in Gravity Forms (the field\'s Advanced tab). The column uses it as the heading, and hovering shows the full question.', 'clickhive-leads' ); ?></p>
 						<?php endif; ?>
 					</td>
 				</tr>
 				<tr>
-					<th scope="row"><label for="chl_retention"><?php esc_html_e( 'Keep leads for', 'clickhive-leads' ); ?></label></th>
+					<th scope="row"><label for="chl_retention"><?php echo esc_html( sprintf( __( 'Keep %s for', 'clickhive-leads' ), chl_label( 'plural_lc' ) ) ); ?></label></th>
 					<td>
 						<input type="number" min="0" max="3650" id="chl_retention" name="<?php echo esc_attr( $name ); ?>[retention_days]" value="<?php echo esc_attr( $s['retention_days'] ); ?>" class="small-text"> <?php esc_html_e( 'days', 'clickhive-leads' ); ?>
-						<p class="description"><?php esc_html_e( '0 keeps leads forever. Otherwise leads with no new submission in this many days are deleted (30 days minimum).', 'clickhive-leads' ); ?></p>
+						<p class="description"><?php echo esc_html( sprintf( __( '0 keeps %1$s forever. Otherwise %1$s with no new submission in this many days are deleted (30 days minimum).', 'clickhive-leads' ), chl_label( 'plural_lc' ) ) ); ?></p>
 					</td>
 				</tr>
 			</table>
@@ -340,10 +410,10 @@ function chl_render_settings() {
 			<h2><?php esc_html_e( 'Dashboard', 'clickhive-leads' ); ?></h2>
 			<table class="form-table" role="presentation">
 				<tr>
-					<th scope="row"><?php esc_html_e( 'Leads summary', 'clickhive-leads' ); ?></th>
+					<th scope="row"><?php echo esc_html( sprintf( __( '%s summary', 'clickhive-leads' ), chl_label() ) ); ?></th>
 					<td>
-						<label><input type="checkbox" name="<?php echo esc_attr( $name ); ?>[dashboard_card]" value="1" <?php checked( $s['dashboard_card'] ); ?>> <?php esc_html_e( 'Show a leads summary on Dashboard > Home and the Click Hive Client Dashboard', 'clickhive-leads' ); ?></label>
-						<p class="description"><?php esc_html_e( 'Leads this month, open leads and the latest lead. Only people who can work leads see it.', 'clickhive-leads' ); ?></p>
+						<label><input type="checkbox" name="<?php echo esc_attr( $name ); ?>[dashboard_card]" value="1" <?php checked( $s['dashboard_card'] ); ?>> <?php echo esc_html( sprintf( __( 'Show a %s summary on Dashboard > Home and the Click Hive Client Dashboard', 'clickhive-leads' ), chl_label( 'plural_lc' ) ) ); ?></label>
+						<p class="description"><?php echo esc_html( sprintf( __( '%1$s this month, open %2$s and the latest %3$s. Only people who can work %2$s see it.', 'clickhive-leads' ), chl_label(), chl_label( 'plural_lc' ), chl_label( 'singular_lc' ) ) ); ?></p>
 					</td>
 				</tr>
 			</table>
