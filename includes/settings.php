@@ -324,6 +324,7 @@ function chl_render_settings() {
 	<div class="wrap">
 		<h1><?php esc_html_e( 'Click Hive Leads', 'clickhive-leads' ); ?> <span class="chl-version" style="font-size:13px;font-weight:400;color:#646970;"><?php echo esc_html( sprintf( __( 'Version %s', 'clickhive-leads' ), CHL_VERSION ) ); ?></span></h1>
 		<?php settings_errors( CHL_OPTION ); ?>
+		<?php chl_import_render_status(); ?>
 
 		<h2><?php esc_html_e( 'Connected forms', 'clickhive-leads' ); ?></h2>
 		<?php if ( ! class_exists( 'GFForms' ) ) : ?>
@@ -419,6 +420,8 @@ function chl_render_settings() {
 			</table>
 			<?php submit_button(); ?>
 		</form>
+
+		<?php chl_import_render_section(); ?>
 	</div>
 	<?php
 }

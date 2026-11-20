@@ -112,6 +112,21 @@ add_action( 'plugins_loaded', function () {
 } );
 
 /**
+ * The time intake treats as "now". Normally the real time; the import of past
+ * form entries sets it to each entry's original date so the list, scorecard
+ * and history show when the person actually wrote in.
+ *
+ * @param int|null $set Unix time to use, 0 to go back to the real time, or null to read.
+ */
+function chl_now( $set = null ) {
+	static $clock = 0;
+	if ( null !== $set ) {
+		$clock = (int) $set;
+	}
+	return $clock ? $clock : time();
+}
+
+/**
  * Records one event on a lead.
  *
  * Events: created, submission, followup, stage, checkbox, note, edit.
@@ -125,7 +140,7 @@ function chl_log( $lead_id, $event, $value = '', $category = '', $detail = array
 		array(
 			'lead_id'    => (int) $lead_id,
 			'event'      => substr( (string) $event, 0, 32 ),
-			'created_at' => current_time( 'mysql', true ),
+			'created_at' => gmdate( 'Y-m-d H:i:s', chl_now() ),
 			'user_id'    => get_current_user_id(),
 			'value'      => substr( (string) $value, 0, 191 ),
 			'category'   => substr( (string) $category, 0, 20 ),
@@ -139,7 +154,7 @@ function chl_log( $lead_id, $event, $value = '', $category = '', $detail = array
 function chl_history( $lead_id ) {
 	global $wpdb;
 	$table = chl_history_table();
-	$rows  = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$table} WHERE lead_id = %d ORDER BY id DESC", $lead_id ), ARRAY_A ); // phpcs:ignore WordPress.DB
+	$rows  = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$table} WHERE lead_id = %d ORDER BY created_at DESC, id DESC", $lead_id ), ARRAY_A ); // phpcs:ignore WordPress.DB
 	foreach ( $rows as &$row ) {
 		$row['detail'] = $row['detail'] ? (array) json_decode( $row['detail'], true ) : array();
 	}
@@ -226,8 +241,11 @@ function chl_fields( $lead_id ) {
 	return is_array( $f ) ? $f : array();
 }
 
-/** Stores copied form fields on a lead. The newest submission wins. */
-function chl_merge_fields( $lead_id, array $fields, $form_id, $entry_id ) {
+/**
+ * Stores copied form fields on a lead. The newest submission wins, so an older
+ * entry brought in by the import only fills fields the lead doesn't have yet.
+ */
+function chl_merge_fields( $lead_id, array $fields, $form_id, $entry_id, $only_missing = false ) {
 	if ( ! $fields ) {
 		return;
 	}
@@ -235,12 +253,15 @@ function chl_merge_fields( $lead_id, array $fields, $form_id, $entry_id ) {
 	$known  = get_option( 'chl_known_fields', array() );
 	$known  = is_array( $known ) ? $known : array();
 	foreach ( $fields as $key => $f ) {
+		if ( $only_missing && isset( $stored[ $key ] ) ) {
+			continue;
+		}
 		$stored[ $key ] = array(
 			'label'    => $f['label'],
 			'value'    => $f['value'],
 			'form_id'  => $form_id,
 			'entry_id' => $entry_id,
-			'at'       => time(),
+			'at'       => chl_now(),
 		);
 		$known[ $key ]  = $f['label'];
 	}

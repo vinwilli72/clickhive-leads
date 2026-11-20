@@ -466,7 +466,8 @@ function chl_count_moved_to( DateTimeImmutable $month, $category ) {
 	return (int) $wpdb->get_var( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
 		$wpdb->prepare(
 			"SELECT COUNT( DISTINCT h.lead_id ) FROM {$table} h INNER JOIN {$wpdb->posts} p ON p.ID = h.lead_id AND p.post_status = 'publish'
-			WHERE h.event = 'stage' AND h.category = %s AND h.created_at >= %s AND h.created_at < %s", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+			WHERE h.event = 'stage' AND h.category = %s AND h.created_at >= %s AND h.created_at < %s
+			AND ( h.detail IS NULL OR h.detail NOT LIKE '%%\"reason\":\"imported\"%%' )", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 			$category,
 			$start->setTimezone( $utc )->format( 'Y-m-d H:i:s' ),
 			$end->setTimezone( $utc )->format( 'Y-m-d H:i:s' )

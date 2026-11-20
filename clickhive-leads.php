@@ -28,6 +28,7 @@ require_once CHL_DIR . 'includes/list.php';
 require_once CHL_DIR . 'includes/export.php';
 require_once CHL_DIR . 'includes/edit.php';
 require_once CHL_DIR . 'includes/dashboard.php';
+require_once CHL_DIR . 'includes/import.php';
 
 // Updates: each site checks the GitHub releases for vinwilli72/clickhive-leads and
 // offers "Update now" under Plugins. Settings and leads live in the database and
