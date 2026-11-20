@@ -1,0 +1,24 @@
+/* Scorecard above the lead list, and the leads summary on the dashboard. */
+.chl-scorecard { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin: 16px 0 12px; clear: both; }
+.chl-scorecard-compact { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin: 0 0 12px; }
+.chl-tile { display: flex; flex-direction: column; gap: 4px; padding: 16px; background: #fff; border: 1px solid #dcdcde; border-radius: 8px; color: #1d2327; text-decoration: none; box-sizing: border-box; }
+.chl-scorecard-compact .chl-tile { padding: 10px 12px; background: #f6f7f7; }
+a.chl-tile:hover, a.chl-tile:focus { border-color: #F7941D; color: #1d2327; }
+.chl-tile-value { font-size: 28px; font-weight: 600; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.chl-scorecard-compact .chl-tile-value { font-size: 22px; }
+.chl-tile-label { font-size: 13px; color: #50575e; }
+
+.chl-dash-latest { margin: 0 0 12px; }
+.chl-dash-latest-label { display: block; font-size: 12px; color: #646970; text-transform: uppercase; letter-spacing: .03em; margin-bottom: 2px; }
+.chl-dash-stage { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 12px; line-height: 18px; background: #f0f0f1; color: #3c434a; white-space: nowrap; }
+.chl-dash-stage.chl-cat-won { background: #edfaef; color: #1e6b2d; }
+.chl-dash-stage.chl-cat-lost { background: #fcf0f1; color: #8a2424; }
+.chl-dash-actions { margin: 0; }
+.chm-dashboard .chl-dash-card { display: block; max-width: 720px; margin-bottom: 24px; }
+
+@media (max-width: 782px) {
+  .chl-scorecard { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 480px) {
+  .chl-scorecard-compact { grid-template-columns: 1fr; }
+}

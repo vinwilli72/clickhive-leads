@@ -1,7 +1,7 @@
 === Click Hive Leads ===
 Requires at least: 6.2
 Requires PHP: 7.4
-Stable tag: 0.1.1
+Stable tag: 0.2.0
 
 Lead inbox for sites managed by Click Hive Marketing.
 
@@ -67,6 +67,10 @@ editors still see the form.
   link while logged out.
 
 == Changelog ==
+
+= 0.2.0 =
+* Scorecard above the lead list: Total leads this month, Leads won this month, Leads lost this month and Total leads last month. It replaces the one-line monthly summary. The two monthly totals open the list filtered to that month.
+* Optional leads summary for Dashboard > Home and the Click Hive Utility Client Dashboard: leads this month, open leads and the latest lead. Turn it on under Settings > Click Hive Leads > Dashboard. Only people who can work leads see it.
 
 = 0.1.1 =
 * Form fields shown as list columns use the field's Admin Field Label from Gravity Forms as the heading when it has one. Hovering the heading shows the full question.
