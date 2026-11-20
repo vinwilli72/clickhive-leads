@@ -51,6 +51,8 @@ function chl_receive( array $s ) {
 			'source'     => array(),
 			'token'      => '',
 			'want_token' => false,
+			'lead_id'    => 0,
+			'imported'   => false,
 		)
 	);
 
@@ -83,14 +85,19 @@ function chl_receive( array $s ) {
 		'entry_id'   => (int) $s['entry_id'],
 		'entry_url'  => esc_url_raw( $s['entry_url'] ),
 	);
+	if ( $s['imported'] ) {
+		$submission['imported'] = true;
+	}
 
 	if ( 'followup' === $s['role'] ) {
-		$lead_id = chl_lead_from_token( $s['token'] );
+		// The import matches follow-up entries by email or phone and passes lead_id.
+		$lead_id = $s['lead_id'] ? (int) $s['lead_id'] : chl_lead_from_token( $s['token'] );
 		if ( ! $lead_id ) {
 			return new WP_Error( 'chl_no_lead', 'The follow-up link is missing or expired.' );
 		}
-		chl_update_core( $lead_id, $core );
-		chl_merge_fields( $lead_id, $fields, $submission['form_id'], $submission['entry_id'] );
+		$older = chl_is_older_than( $lead_id );
+		chl_update_core( $lead_id, $core, $older );
+		chl_merge_fields( $lead_id, $fields, $submission['form_id'], $submission['entry_id'], $older );
 		chl_add_form( $lead_id, $submission['form_id'] );
 		chl_log( $lead_id, 'followup', (string) $submission['form_id'], '', $submission + array( 'fields' => array_keys( $fields ) ) );
 		return array(
@@ -103,31 +110,37 @@ function chl_receive( array $s ) {
 	$source  = chl_clean_source( $s['source'] );
 	$lead_id = chl_find_person( $core['email'], $normalized );
 	$created = ! $lead_id;
+	$older   = ! $created && chl_is_older_than( $lead_id );
 
 	if ( $created ) {
+		$now     = chl_now();
 		$lead_id = wp_insert_post(
 			array(
-				'post_type'   => CHL_CPT,
-				'post_status' => 'publish',
-				'post_title'  => chl_title_from( $core ),
+				'post_type'     => CHL_CPT,
+				'post_status'   => 'publish',
+				'post_title'    => chl_title_from( $core ),
+				'post_date'     => wp_date( 'Y-m-d H:i:s', $now ),
+				'post_date_gmt' => gmdate( 'Y-m-d H:i:s', $now ),
 			),
 			true
 		);
 		if ( is_wp_error( $lead_id ) ) {
 			return $lead_id;
 		}
-		chl_set( $lead_id, 'first_received', time() );
+		chl_set( $lead_id, 'first_received', $now );
 		chl_set( $lead_id, 'submissions', 1 );
 		chl_set( $lead_id, 'source', $source ? chl_source_label( $source ) : '' );
 		chl_set( $lead_id, 'source_data', $source );
 		chl_log( $lead_id, 'created', (string) $submission['form_id'], '', $submission );
 		chl_set_stage( $lead_id, chl_default_stage() );
+	} elseif ( $older ) {
+		chl_handle_older( $lead_id );
 	} else {
-		chl_handle_returning( $lead_id, $core );
+		chl_handle_returning( $lead_id, $core, ! $s['imported'] );
 	}
 
-	chl_update_core( $lead_id, $core );
-	chl_merge_fields( $lead_id, $fields, $submission['form_id'], $submission['entry_id'] );
+	chl_update_core( $lead_id, $core, $older );
+	chl_merge_fields( $lead_id, $fields, $submission['form_id'], $submission['entry_id'], $older );
 	chl_add_form( $lead_id, $submission['form_id'] );
 	if ( ! $created && $source && ! chl_get( $lead_id, 'source_data' ) ) {
 		chl_set( $lead_id, 'source', chl_source_label( $source ) );
@@ -148,7 +161,7 @@ function chl_receive( array $s ) {
 	if ( $s['want_token'] ) {
 		$token = wp_generate_password( 32, false );
 		chl_set( $lead_id, 'token', $token );
-		chl_set( $lead_id, 'token_at', time() );
+		chl_set( $lead_id, 'token_at', chl_now() );
 	}
 
 	return array(
@@ -165,15 +178,18 @@ function chl_receive( array $s ) {
  * marked "Clear" in settings are unchecked so the "not checked" filter catches
  * the new inquiry, and a lead in a Lost stage goes back to the first Open
  * stage. Won leads stay won.
+ *
+ * The import passes $reopen false: an old entry is history, so it moves the
+ * date and count but leaves the stage and checkboxes alone.
  */
-function chl_handle_returning( $lead_id, array $core ) {
+function chl_handle_returning( $lead_id, array $core, $reopen = true ) {
 	$count = max( 1, (int) chl_get( $lead_id, 'submissions' ) ) + 1;
 	chl_set( $lead_id, 'submissions', $count );
 	if ( ! chl_get( $lead_id, 'first_received' ) ) {
 		chl_set( $lead_id, 'first_received', get_post_time( 'U', true, $lead_id ) );
 	}
 
-	$now    = time();
+	$now    = chl_now();
 	$update = array(
 		'ID'            => $lead_id,
 		'post_date'     => wp_date( 'Y-m-d H:i:s', $now ),
@@ -185,6 +201,10 @@ function chl_handle_returning( $lead_id, array $core ) {
 		$update['post_title'] = $title;
 	}
 	wp_update_post( $update );
+
+	if ( ! $reopen ) {
+		return;
+	}
 
 	$stage = (string) chl_get( $lead_id, 'stage' );
 	if ( in_array( $stage, chl_stages_in( 'lost' ), true ) ) {
@@ -198,10 +218,34 @@ function chl_handle_returning( $lead_id, array $core ) {
 	}
 }
 
-/** Core fields: a new value replaces the old one, a blank never erases it. */
-function chl_update_core( $lead_id, array $core ) {
+/**
+ * True when the submission being received is older than the lead's latest
+ * one. Only happens during the import, when someone who already has a lead
+ * from a live submission also has older entries.
+ */
+function chl_is_older_than( $lead_id ) {
+	return chl_now() < (int) get_post_time( 'U', true, $lead_id );
+}
+
+/** An older entry for an existing lead: count it and keep the earliest date. */
+function chl_handle_older( $lead_id ) {
+	chl_set( $lead_id, 'submissions', max( 1, (int) chl_get( $lead_id, 'submissions' ) ) + 1 );
+	$first = (int) chl_get( $lead_id, 'first_received' );
+	if ( ! $first || chl_now() < $first ) {
+		chl_set( $lead_id, 'first_received', chl_now() );
+	}
+}
+
+/**
+ * Core fields: a new value replaces the old one, a blank never erases it.
+ * With $only_blank, an older entry only fills fields the lead doesn't have.
+ */
+function chl_update_core( $lead_id, array $core, $only_blank = false ) {
 	$changed = false;
 	foreach ( $core as $name => $value ) {
+		if ( $only_blank && '' !== (string) chl_get( $lead_id, $name ) ) {
+			continue;
+		}
 		if ( '' !== $value && chl_get( $lead_id, $name ) !== $value ) {
 			chl_set( $lead_id, $name, $value );
 			$changed = true;

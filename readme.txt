@@ -1,7 +1,7 @@
 === Click Hive Leads ===
 Requires at least: 6.2
 Requires PHP: 7.4
-Stable tag: 0.3.0
+Stable tag: 0.3.1
 
 Lead inbox for sites managed by Click Hive Marketing.
 
@@ -67,6 +67,10 @@ editors still see the form.
   link while logged out.
 
 == Changelog ==
+
+= 0.3.1 =
+* Import past entries. Settings > Click Hive Leads > Import past entries brings a connected form's earlier Gravity Forms entries into the list, oldest first, with their original dates, so they don't count toward this month's numbers. Choose an optional start date and the stage new imports start in. Repeat senders become one lead with each submission counted, and an older entry never overwrites newer details on an existing lead. Entries already in the list are skipped, so it is safe to run again. Follow-up step entries are matched by email or phone. Stage changes made by the import don't count toward the won and lost numbers.
+* The lead history is ordered by when each event happened.
 
 = 0.3.0 =
 * Rename leads per site. Settings > Click Hive Leads > Name takes a singular and plural name, for example Franchise Request and Franchise Requests, and uses them across the admin menu, list, lead screen, dashboard summary, Gravity Forms settings and export file name. Leave both empty to keep Lead and Leads. The settings note recommends 16 characters or fewer for the plural so the menu item stays on one line.

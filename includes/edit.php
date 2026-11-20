@@ -197,20 +197,26 @@ function chl_history_text( array $r ) {
 		return ' (' . esc_html( $label ) . ')';
 	};
 	$form  = isset( $d['form_title'] ) ? $d['form_title'] : '';
-	$why   = isset( $d['reason'] ) && 'returned' === $d['reason'] ? ' ' . esc_html__( 'because they sent a form again', 'clickhive-leads' ) : '';
+	$why   = '';
+	if ( isset( $d['reason'] ) && 'returned' === $d['reason'] ) {
+		$why = ' ' . esc_html__( 'because they sent a form again', 'clickhive-leads' );
+	} elseif ( isset( $d['reason'] ) && 'imported' === $d['reason'] ) {
+		$why = ' ' . esc_html__( 'during the import of past entries', 'clickhive-leads' );
+	}
+	$imported = empty( $d['imported'] ) ? '' : ' ' . esc_html__( '(imported)', 'clickhive-leads' );
 
 	switch ( $r['event'] ) {
 		case 'created':
 			/* translators: 1: singular name for a lead, 2: form name */
-			return esc_html( sprintf( __( '%1$s created from %2$s', 'clickhive-leads' ), chl_label( 'singular' ), $form ) );
+			return esc_html( sprintf( __( '%1$s created from %2$s', 'clickhive-leads' ), chl_label( 'singular' ), $form ) ) . $imported;
 		case 'submission':
 			$text = sprintf( __( 'Sent %s', 'clickhive-leads' ), $form );
 			if ( ! empty( $d['source'] ) ) {
 				$text .= ' ' . sprintf( __( 'from %s', 'clickhive-leads' ), $d['source'] );
 			}
-			return esc_html( $text ) . $entry();
+			return esc_html( $text ) . $entry() . $imported;
 		case 'followup':
-			return esc_html( sprintf( __( 'Follow-up step: %s', 'clickhive-leads' ), $form ) ) . $entry();
+			return esc_html( sprintf( __( 'Follow-up step: %s', 'clickhive-leads' ), $form ) ) . $entry() . $imported;
 		case 'stage':
 			if ( empty( $d['from'] ) ) {
 				return esc_html( sprintf( __( 'Stage set to %s', 'clickhive-leads' ), $d['label'] ) );

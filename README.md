@@ -19,6 +19,8 @@ build brief.
   screens.
 - `includes/source.php`: the first-visit source cookie.
 - `includes/settings.php`: Settings > Click Hive Leads.
+- `includes/import.php`: one-time import of past Gravity Forms entries, run
+  in batches from the settings page.
 
 ## Tests
 
