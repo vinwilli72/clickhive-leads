@@ -1,7 +1,7 @@
 === Click Hive Leads ===
 Requires at least: 6.2
 Requires PHP: 7.4
-Stable tag: 0.3.1
+Stable tag: 0.3.2
 
 Lead inbox for sites managed by Click Hive Marketing.
 
@@ -67,6 +67,9 @@ editors still see the form.
   link while logged out.
 
 == Changelog ==
+
+= 0.3.2 =
+* Fix: Import past entries stopped with "The link you followed has expired" before the first batch. An import that got stuck this way picks up where it left off after updating.
 
 = 0.3.1 =
 * Import past entries. Settings > Click Hive Leads > Import past entries brings a connected form's earlier Gravity Forms entries into the list, oldest first, with their original dates, so they don't count toward this month's numbers. Choose an optional start date and the stage new imports start in. Repeat senders become one lead with each submission counted, and an older entry never overwrites newer details on an existing lead. Entries already in the list are skipped, so it is safe to run again. Follow-up step entries are matched by email or phone. Stage changes made by the import don't count toward the won and lost numbers.

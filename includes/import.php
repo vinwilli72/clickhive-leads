@@ -34,8 +34,18 @@ function chl_import_settings_url( $args = array() ) {
 	return add_query_arg( $args, admin_url( 'options-general.php?page=chl-settings' ) );
 }
 
+/**
+ * Raw URL for the next batch. Built with add_query_arg rather than
+ * wp_nonce_url, which escapes & as &amp; for HTML and breaks redirects.
+ */
 function chl_import_step_url() {
-	return wp_nonce_url( admin_url( 'admin-post.php?action=chl_import_step' ), 'chl_import_step' );
+	return add_query_arg(
+		array(
+			'action'   => 'chl_import_step',
+			'_wpnonce' => wp_create_nonce( 'chl_import_step' ),
+		),
+		admin_url( 'admin-post.php' )
+	);
 }
 
 /** Search criteria for a job: active entries, optionally from a start date. */
