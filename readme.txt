@@ -1,7 +1,7 @@
 === Click Hive Leads ===
 Requires at least: 6.2
 Requires PHP: 7.4
-Stable tag: 0.2.0
+Stable tag: 0.3.0
 
 Lead inbox for sites managed by Click Hive Marketing.
 
@@ -67,6 +67,9 @@ editors still see the form.
   link while logged out.
 
 == Changelog ==
+
+= 0.3.0 =
+* Rename leads per site. Settings > Click Hive Leads > Name takes a singular and plural name, for example Franchise Request and Franchise Requests, and uses them across the admin menu, list, lead screen, dashboard summary, Gravity Forms settings and export file name. Leave both empty to keep Lead and Leads. The settings note recommends 16 characters or fewer for the plural so the menu item stays on one line.
 
 = 0.2.0 =
 * Scorecard above the lead list: Total leads this month, Leads won this month, Leads lost this month and Total leads last month. It replaces the one-line monthly summary. The two monthly totals open the list filtered to that month.

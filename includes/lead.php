@@ -15,15 +15,20 @@ add_action( 'init', function () {
 		CHL_CPT,
 		array(
 			'labels'              => array(
-				'name'               => __( 'Leads', 'clickhive-leads' ),
-				'singular_name'      => __( 'Lead', 'clickhive-leads' ),
-				'menu_name'          => __( 'Leads', 'clickhive-leads' ),
-				'all_items'          => __( 'All Leads', 'clickhive-leads' ),
-				'edit_item'          => __( 'Lead', 'clickhive-leads' ),
-				'search_items'       => __( 'Search Leads', 'clickhive-leads' ),
-				'not_found'          => __( 'No leads found', 'clickhive-leads' ),
-				'not_found_in_trash' => __( 'No leads in the trash', 'clickhive-leads' ),
-				'item_updated'       => __( 'Lead saved.', 'clickhive-leads' ),
+				'name'               => chl_label(),
+				'singular_name'      => chl_label( 'singular' ),
+				'menu_name'          => chl_label(),
+				/* translators: %s: plural name for leads, e.g. Leads */
+				'all_items'          => sprintf( __( 'All %s', 'clickhive-leads' ), chl_label() ),
+				'edit_item'          => chl_label( 'singular' ),
+				/* translators: %s: plural name for leads */
+				'search_items'       => sprintf( __( 'Search %s', 'clickhive-leads' ), chl_label() ),
+				/* translators: %s: plural name for leads, lowercase */
+				'not_found'          => sprintf( __( 'No %s found', 'clickhive-leads' ), chl_label( 'plural_lc' ) ),
+				/* translators: %s: plural name for leads, lowercase */
+				'not_found_in_trash' => sprintf( __( 'No %s in the trash', 'clickhive-leads' ), chl_label( 'plural_lc' ) ),
+				/* translators: %s: singular name for a lead */
+				'item_updated'       => sprintf( __( '%s saved.', 'clickhive-leads' ), chl_label( 'singular' ) ),
 			),
 			'public'              => false,
 			'publicly_queryable'  => false,

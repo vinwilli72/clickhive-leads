@@ -105,7 +105,7 @@ class CHL_GF_AddOn extends GFAddOn {
 				'fields' => array(
 					array(
 						'name'  => 'enabled',
-						'label' => __( 'Save submissions from this form as leads', 'clickhive-leads' ),
+						'label' => sprintf( __( 'Save submissions from this form as %s', 'clickhive-leads' ), chl_label( 'plural_lc' ) ),
 						'type'  => 'toggle',
 					),
 					array(
@@ -118,11 +118,11 @@ class CHL_GF_AddOn extends GFAddOn {
 						'choices'       => array(
 							array(
 								'value' => 'create',
-								'label' => __( 'Creates or updates a lead', 'clickhive-leads' ),
+								'label' => sprintf( __( 'Creates or updates a %s', 'clickhive-leads' ), chl_label( 'singular_lc' ) ),
 							),
 							array(
 								'value' => 'followup',
-								'label' => __( 'Follow-up step (adds to the lead from an earlier form)', 'clickhive-leads' ),
+								'label' => sprintf( __( 'Follow-up step (adds to the %s from an earlier form)', 'clickhive-leads' ), chl_label( 'singular_lc' ) ),
 							),
 						),
 					),
@@ -136,12 +136,12 @@ class CHL_GF_AddOn extends GFAddOn {
 			),
 			array(
 				'title'       => __( 'Other fields to copy', 'clickhive-leads' ),
-				'description' => __( 'Checked fields show on the lead under their labels here. For healthcare clients, leave free-text fields unchecked.', 'clickhive-leads' ),
+				'description' => sprintf( __( 'Checked fields show on the %s under their labels here. For healthcare clients, leave free-text fields unchecked.', 'clickhive-leads' ), chl_label( 'singular_lc' ) ),
 				'dependency'  => $enabled,
 				'fields'      => array(
 					$copy ? array(
 						'name'    => 'copy',
-						'label'   => __( 'Copy to the lead', 'clickhive-leads' ),
+						'label'   => sprintf( __( 'Copy to the %s', 'clickhive-leads' ), chl_label( 'singular_lc' ) ),
 						'type'    => 'checkbox',
 						'choices' => $copy,
 					) : array(

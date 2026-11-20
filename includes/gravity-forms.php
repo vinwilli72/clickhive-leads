@@ -241,12 +241,12 @@ add_filter( 'gform_custom_merge_tags', function ( $tags, $form_id ) {
 	$form = $form_id && class_exists( 'GFAPI' ) ? GFAPI::get_form( $form_id ) : null;
 	if ( $form && chl_gf_enabled( $form ) ) {
 		$tags[] = array(
-			'label' => __( 'Lead link', 'clickhive-leads' ),
+			'label' => sprintf( __( '%s link', 'clickhive-leads' ), chl_label( 'singular' ) ),
 			'tag'   => '{ch_lead_link}',
 		);
 	}
 	$tags[] = array(
-		'label' => __( 'Leads list link', 'clickhive-leads' ),
+		'label' => sprintf( __( '%s list link', 'clickhive-leads' ), chl_label() ),
 		'tag'   => '{ch_leads_url}',
 	);
 	return $tags;
